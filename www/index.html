@@ -8,19 +8,10 @@
     <title>Main Page</title>
     <link rel="stylesheet" href="css/chui-android-3.8.5.min.css" />
     <link rel="stylesheet" href="css/index.css" />
-	<script src="js/jquery-2.1.3.js"></script>
+	<link rel="stylesheet" href="css/leaflet.css" />
+    <script src="js/jquery-2.1.3.js"></script>
     <script src="js/chocolatechip-3.8.7.min.js"></script>
     <script src="js/chui-3.8.5.min.js"></script>
-	
-    <script>
-        $(function() {
-			$.UISlideout();
-			$.UISlideout.populate([{login:"My HSL"},{settings:"Settings"},{contacts:"My Contacts"}]);
-			$("#facebooklogin").click(function(){
-				console.log("herer");
-			});
-        });
-    </script>
   </head>
   <body>
     <nav>
@@ -36,14 +27,12 @@
           </aside>
           <h2 style="display:inline; white-space:nowrap;">Login to your HSL Navigator</h2>
         </div>
-        <ul class='list'>
+        <ul class='list' style="position: absolute;top: 40px;bottom: 20px;width: 100%;">
           <li class='comp'>
             <input id="facebooklogin" type="image" src="img/fblogin.png" alt="Login" />
           </li>
-          <li>
-            <center>
-              <img src="img/HelsinkiMap.gif" />
-            </center>
+          <li style="overflow: hidden;height: 100%;padding: 0px;">
+			<div id="map" style="border: 0;height: 100%;"></div>
           </li>
         </ul>
       </section>
@@ -60,6 +49,7 @@
     </nav>
     <article id='contacts'>Link to Contacts from FB that use tha app if possible All other menu items use the same patern -&gt; add
     the id in the article after the nav element and also keep same id in the script that composes the menu</article>
+    <script src="js/leaflet.js"></script>
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
   </body>
