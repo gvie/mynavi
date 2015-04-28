@@ -9,48 +9,137 @@
     <link rel="stylesheet" href="css/chui-android-3.8.5.min.css" />
     <link rel="stylesheet" href="css/index.css" />
 	<link rel="stylesheet" href="css/leaflet.css" />
-    <script src="js/jquery-2.1.3.js"></script>
-    <script src="js/chocolatechip-3.8.7.min.js"></script>
-    <script src="js/chui-3.8.5.min.js"></script>
   </head>
   <body>
-    <nav>
-      <div>
-        <h1>HSL Navigator</h1>
-      </div>
-    </nav>
-    <article id='login'>
-      <section>
-        <div style="white-space:nowrap">
-          <aside style="display:inline;">
-            <img src="img/hslogo.png" height="20px" id="logo" />
-          </aside>
-          <h2 style="display:inline; white-space:nowrap;">Login to your HSL Navigator</h2>
-        </div>
-        <ul class='list' style="position: absolute;top: 40px;bottom: 20px;width: 100%;">
-          <li class='comp'>
-            <input id="facebooklogin" type="image" src="img/fblogin.png" alt="Login" />
-          </li>
-          <li style="overflow: hidden;height: 100%;padding: 0px;">
-			<div id="map" style="border: 0;height: 100%;"></div>
-          </li>
-        </ul>
-      </section>
-    </article>
+    <div id="fb-root"></div>
     <nav>
       <h1>My HSL</h1>
     </nav>
+	<article id='myhsl'>
+		<section>
+			<div style="white-space:nowrap">
+			<aside style="display:inline;">
+				<img src="img/hslogo.png" height="20px" id="logo">
+			</aside>
+			<h2 id="namenavi" style="display:inline; white-space:nowrap;"> My HSL Navigator</h2>
+			<!--If possible add the name and profile photo of the person here-->
+			<aside>
+			</aside>
+			</div>
+	
+			<ul class='list'>
+			<li class='comp'>
+				<aside style="display:inline;">
+					<img src="img/target.png" height="40px">
+				</aside>
+				<p style="display:inline; white-space:nowrap; font-size:140%;" >Bring me to...</p>
+			</li>
+			<li class='comp'>
+				<aside style="display:inline;">
+					<img src="img/homelogo.png" height="40px">
+				</aside>
+				<p style="display:inline; white-space:nowrap; font-size:140%;" >HOME</p>
+			</li>
+			
+			<li class='comp'>
+				<aside style="display:inline;">
+					<img src="img/work.png" height="40px">
+				</aside>
+				<p style="display:inline; white-space:nowrap; font-size:140%;" > WORK </p>
+			</li>
+			
+			<li class='comp'>
+				<aside style="display:inline;">
+					<img src="img/school.png" height="40px">
+				</aside>
+				<p style="display:inline; white-space:nowrap; font-size:140%;" > SCHOOL </p>
+			</li>
+			
+			<li class='comp'>
+				<aside style="display:inline;">
+					<img src="img/female.png" height="40px">
+				</aside>
+				<p style="display:inline; white-space:nowrap; font-size:140%;" > Friend's Place </p>
+			</li>
+			</ul>	
+	
+	</article>
+    <nav>
+		<h1>Navigate to location</h1>
+	</nav>
+	
+	<article id='navigate'>
+		<section>
+			<div style="white-space:nowrap">
+			<aside style="display:inline;">
+				<img src="img/hslogo.png" height="20px" id="logo">
+			</aside>
+			<h2 style="display:inline; white-space:nowrap;"> My HSL Navigator</h2>
+			</div>
+			<!--Instead of this title add just the photo of the person or both depending how it looks-->
+			<div>
+			<h2> Going to location </h2>
+			
+			<aside>
+			<img src="img/going.jpg" >
+			</aside>
+			
+			<ul class='list'>
+			<li class='comp'>
+			Bus number X
+			</li>
+			<li class='comp'>
+			Bus number Y
+			</li>
+			<li class='comp'>
+			Bus number Z
+			</li>
+			</ul>
+			
+		</section>
+	</article>
+    <nav>
+      <h1>Events</h1>
+    </nav>
+    <article id='events'>
+		<div style="white-space:nowrap">
+          <aside style="display:inline;">
+            <img src="img/hslogo.png" style="display:inline;height:20px;" id="logo" />
+          </aside>
+          <h2 style="display:inline; white-space:nowrap;">Facebook events</h2>
+        </div>
+        <ul id="facebookevents" class='list'>
+        </ul>
+	</article>
     <nav>
       <h1>Settings</h1>
     </nav>
-    <article id='settings'>Some Settings Link to Settings page or create Settings here directly</article>
+	
+	<article id='settings'>
+	Some Settings
+	Link to Settings page or create Settings here directly
+	</article>
+
     <nav>
       <h1>My Contacts</h1>
     </nav>
     <article id='contacts'>Link to Contacts from FB that use tha app if possible All other menu items use the same patern -&gt; add
     the id in the article after the nav element and also keep same id in the script that composes the menu</article>
+	
+	<nav>
+      <h1>Map</h1>
+    </nav>
+	<article id='mappage'>
+		<div id="eventmap" style="border: 0;height: 100%;"></div>
+	</article>
+    
+	<script src="js/jquery-2.1.3.js"></script>
+    <script src="js/chocolatechip-3.8.7.min.js"></script>
+    <script src="js/chui-3.8.5.min.js"></script>
     <script src="js/leaflet.js"></script>
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript" src="js/events.js"></script>
+    <script type="text/javascript" src="js/routing.js"></script>
   </body>
 </html>
