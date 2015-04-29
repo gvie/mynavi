@@ -5,12 +5,17 @@
             "id": "org.apache.cordova.geolocation"
         }
     },
-    
     "com.phonegap.plugins.facebookconnect": {
         "source": {
             "type": "git",
             "url": "https://github.com/Wizcorp/phonegap-facebook-plugin/",
             "subdir": "."
+        }
+    },
+    "de.appplant.cordova.plugin.local-notification": {
+        "source": {
+            "type": "registry",
+            "id": "de.appplant.cordova.plugin.local-notification"
         }
     }
 }
