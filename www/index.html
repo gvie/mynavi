@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/chui-android-3.8.5.min.css" />
     <link rel="stylesheet" href="css/index.css" />
 	<link rel="stylesheet" href="css/leaflet.css" />
+
   </head>
   <body>
     <div id="fb-root"></div>
@@ -116,8 +117,27 @@
     </nav>
 	
 	<article id='settings'>
-	Some Settings
+	Some Settings 
 	Link to Settings page or create Settings here directly
+		<div>
+
+			<!-- <form action="." method="get">
+               Enter your home address: <input type="text" name="adress"> <br>
+               <input type="submit" value="Submit">
+            </form>  -->
+
+            <form class="addressSearch" method="get" action="/">
+               <label><b>Enter your adress</b></label>
+               <input type="text" name="adress" id="user_input"><!-- navigate-to-input-->
+            
+
+               <input type="submit" onclick="showInput();"><br />
+             </form>
+               <label>Your adress: </label>
+               <p><span id='display'></span> </p>
+
+
+		</div>
 	</article>
 
     <nav>
@@ -149,10 +169,13 @@
     <script src="js/chocolatechip-3.8.7.min.js"></script>
     <script src="js/chui-3.8.5.min.js"></script>
     <script src="js/leaflet.js"></script>
+   
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
     <script type="text/javascript" src="js/notification.js"></script>
     <script type="text/javascript" src="js/events.js"></script>
     <script type="text/javascript" src="js/routing.js"></script>
+    <script type="text/javascript" src="js/home.js"></script> 
+    
   </body>
 </html>
