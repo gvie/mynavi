@@ -7,8 +7,10 @@ function updateInfoFromStorage() {
 	else
 		$('#namenavi').text("My Navigator");
 	var img = localStorage.getItem("pic");
-	if(img.length)
+	if(img.length) {
 		$('#logo').attr("src", img);
+		$('#mymarkericon').css('background-image', 'url(' + img + ')');
+	}
 }
 
 function showLoginDialog(callback) {

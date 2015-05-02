@@ -52,9 +52,13 @@ var userLocation = null;
 function onLocationFoundEvent(e) {
     var radius = e.accuracy / 2;
 	userLocation = e.latlng;
-    L.marker(e.latlng).addTo(eventmap)
+	var myIcon = L.divIcon({className: 'mymarker', iconSize: [50,50], iconAnchor:[25,50], popupAnchor: [0,-50], html: "<div id='mymarkericon' class='myicon'></div>"});
+    L.marker(e.latlng, {icon: myIcon}).addTo(eventmap)
         .bindPopup("You are within " + radius + " meters from this point").openPopup();
     L.circle(e.latlng, radius).addTo(eventmap);
+	var img = localStorage.getItem("pic");
+	if(img.length)
+		$('#mymarkericon').css('background-image', 'url(' + img + ')');
 }
 
 function onLocationErrorEvent(e) {
