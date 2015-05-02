@@ -18,7 +18,7 @@ String.prototype.hashCode = function() {
 // looks up routes from user location to target location
 // and draws it on the map
 // TODO: take time into consideration
-function setTarget(location, time, name, eventid) {
+function setTarget(location, time, name, place, eventid) {
 	$('article.show').removeClass('show');
 	$('#mappage').addClass('show');
 	$('#notifyme').prop('checked', localStorage.getItem('event' + eventid));
@@ -49,22 +49,25 @@ function setTarget(location, time, name, eventid) {
 		$('#notifyme').on($.eventStart, function() {
 			window.console.log("ischecked " + $('#notifyme').prop('checked'));
 			if(!$('#notifyme').prop('checked')) {
+				addToNoticationList(eventid, name, time, place);
+				updateNotifications();
 				for(var i = 0, count = 0; i < itinerary.legs.length; i++) {
+					var last = i == (itinerary.legs.length-1);
 					var leg = itinerary.legs[i];
 					console.log(leg.mode);
 					if(leg.mode == "WALK" && i == 0) {
-						window.notify.notifyOn("Go to the busstation", "", leg.startTime, "file:///android_asset/www/img/walking.png", (eventid + '-' + count).hashCode());
+						window.notify.notifyOn("Go to the busstation", "", leg.startTime, "file:///android_asset/www/img/walking.png", (eventid + '-' + count).hashCode(), eventid, last);
 						count++;
 					}
 					else if(leg.mode == "BUS") {
-						window.notify.notifyOn("Enter Bus " + leg.route + " " + leg.headsign, "", leg.startTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode());
+						window.notify.notifyOn("Enter Bus " + leg.route + " " + leg.headsign, "", leg.startTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode(), eventid, last);
 						count++;
-						window.notify.notifyOn("Leave Bus " + leg.route + " " + leg.headsign, "", leg.endTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode());
+						window.notify.notifyOn("Leave Bus " + leg.route + " " + leg.headsign, "", leg.endTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode(), eventid, last);
 						count++;
 					} else if(leg.mode == "RAIL") {
-						window.notify.notifyOn("Enter Train " + leg.route + " " + leg.headsign, "", leg.startTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode());
+						window.notify.notifyOn("Enter Train " + leg.route + " " + leg.headsign, "", leg.startTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode(), eventid, last);
 						count++;
-						window.notify.notifyOn("Leave Train " + leg.route + " " + leg.headsign, "", leg.endTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode());
+						window.notify.notifyOn("Leave Train " + leg.route + " " + leg.headsign, "", leg.endTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode(), eventid, last);
 						count++;
 					}
 				}

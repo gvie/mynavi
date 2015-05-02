@@ -14,7 +14,7 @@ var eventTemplate = '<li class="comp nav" data-id="[[= data.id]]" data-time="[[=
         '<div>'+
             '<h3>[[= data.name]]</h3>'+
             '<h4>[[= new Date(data.start_time).toLocaleTimeString("en-us", {weekday: "long", year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"})]]</h4>'+
-            '<h4>[[ if (data.place) { ]] [[= data.place.name ]] [[ } ]]</h4>'+
+            '<h4 class="asd">[[ if (data.place) { ]] [[= data.place.name ]] [[ } ]]</h4>'+
 		'</div>'+
     '</li>';
 
@@ -31,7 +31,7 @@ function gotEvents(data) {
 		var time = $this.data("time");
 		var id = $this.data("id");
 		if(location.length === 2 && time !== "") {
-			setTarget(location, new Date(time), $this.find('h3').text(), id);
+			setTarget(location, new Date(time), $this.find('h3').text(), $this.find('h4.asd').text(), id);
 		}
 	});
 }

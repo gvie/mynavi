@@ -61,13 +61,21 @@
         this.granted = granted;
         return window.console.log(this.granted);
       });
+	  
+	  cordova.plugins.notification.local.on("trigger", function(notification) {
+		if(notification.data.last) {
+			removeFromNotificationList(notification.data.id);
+			updateNotifications();
+		}
+	  });
+	  
     }
 
     AndroidNotify.prototype.notify = function() {
       return alert(data);
     };
 
-    AndroidNotify.prototype.notifyOn = function(title, message, time, icon, id) {
+    AndroidNotify.prototype.notifyOn = function(title, message, time, icon, id, eventid, last) {
 	  console.log(new Date(time).toUTCString() + " " + id);
       return cordova.plugins.notification.local.schedule({
         id: id,
@@ -75,7 +83,8 @@
         text: message,
         icon: icon,
         at: new Date(time),
-		smallIcon: icon
+		smallIcon: icon,
+		data: { id: eventid, last: last }
       });
     };
 	
@@ -102,4 +111,57 @@
   })(Notify);
 }).call(this);
 
+// format: {id:"eventid", name:"", place:"", time:""}
+var notifications = [];
 
+function addToNoticationList(id, name, time, place) {
+	notifications.push({ id: id, 
+						 name: name,
+						 place: place,
+						 time: new Date(time).toLocaleTimeString("en-us", {weekday: "long", year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"}),
+						  });
+}
+
+function removeFromNotificationList(id) {
+	for(var i = 0; i < notifications.length; i++){
+		if(notifications[i].id === id) {
+			notifications.splice(i, 1);
+			return;
+		}
+	}
+}
+
+var notificationTemplate = '<li class="comp">' +
+				'<div>' +
+					'<h3>[[= data.name ]]</h3>' +
+					'<h4>' +
+						'[[= data.time ]]' +
+					'</h4>' +
+					'<h4>' +
+						'[[= data.place ]]' +
+					'</h4>' +
+				'</div>' +
+				'<aside>' +
+					'<img data-id="[[= data.id]]" id="cancelnotification" src="img/trash.png" class="trash-button" ></img>' +
+				'</aside>' +
+			'</li>';
+			
+function updateNotifications() {
+	$('#notificationlist').empty();
+	if(notifications.length === 0) {
+		$('#notificationlist').html('<li><div><h3>No Notifications</h3></div></li>');
+	} else {
+		notifications.sort(function(a,b){ return new Date(a.start_time) - new Date(b.start_time)});
+		$.template.repeater($('#notificationlist'), notificationTemplate, notifications);
+	  
+		$('#notificationlist').on('singletap', 'img', function() {
+			$this = $(this);
+			var eventid = $this.data("id");
+			window.notify.remove(eventid, localStorage.getItem('event' + eventid));
+			window.localStorage.removeItem('event' + eventid);
+			removeFromNotificationList(eventid);
+			updateNotifications();
+		});
+	}
+	localStorage.setItem("notifications", JSON.stringify(notifications));
+}

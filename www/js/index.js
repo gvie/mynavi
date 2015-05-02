@@ -62,7 +62,7 @@ function showLoginDialog(callback) {
 
 function showSlideOut() {
 	$.UISlideout();
-	$.UISlideout.populate([{myhsl:'My HSL'},{navigate:'Navigate to location'},{events:"My Events"},{settings:'Settings'},{contacts:'My Contacts'}]);
+	$.UISlideout.populate([{myhsl:'My HSL'},{navigate:'Navigate to location'},{events:"My Events"},{settings:'Settings'},{contacts:'My Contacts'}, {notifications:'My Notifications'}]);
 }
 
 function onPageLoad() {
@@ -95,6 +95,11 @@ function onPageLoad() {
 			});
 		}
 		updateInfoFromStorage();
+		var noti = localStorage.getItem("notifications");
+		if(noti) {
+			notifications = JSON.parse(noti);
+		}
+		updateNotifications();
 	}
 }
 
@@ -123,6 +128,10 @@ document.addEventListener("deviceready", function() {
 	document.addEventListener("resume", function(){
 		// load state:
 		$('#notifyme').prop('checked', localStorage.getItem('lastvisibleevent'));
+		var noti = localStorage.getItem("notifications");
+		if(noti) {
+			notifications = JSON.parse(noti);
+		}
 	});
 	document.addEventListener("menubutton", function(){
 		if($('.slide-out').hasClass('open')) {
