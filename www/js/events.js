@@ -6,7 +6,7 @@ function getEvents() {
 							  });
 }
 
-var eventTemplate = '<li class="comp nav" data-time="[[= data.start_time]]" data-location=\'[[ if (data.place && data.place.location) { ]][[[= data.place.location.latitude]],[[= data.place.location.longitude]]][[ } ]]\'>'+
+var eventTemplate = '<li class="comp nav" data-id="[[= data.id]]" data-time="[[= data.start_time]]" data-location=\'[[ if (data.place && data.place.location) { ]][[[= data.place.location.latitude]],[[= data.place.location.longitude]]][[ } ]]\'>'+
         '<aside>'+
 			'<div style="background: url([[= data.cover.source ]]) 50% 50% no-repeat;width: 250px;height: 80px;"></div>'+
             //'<img title="Event Image" src="[[= data.cover.source ]]" height="80px">'+
@@ -29,8 +29,9 @@ function gotEvents(data) {
 		$this = $(this);
 		var location = $this.data("location");
 		var time = $this.data("time");
+		var id = $this.data("id");
 		if(location.length === 2 && time !== "") {
-			setTarget(location, new Date(time), $this.find('h3').text());
+			setTarget(location, new Date(time), $this.find('h3').text(), id);
 		}
 	});
 }

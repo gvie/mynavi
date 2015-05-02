@@ -4,12 +4,25 @@ var targetMarker = null;
 var eventmap = L.map('eventmap', { zoomControl:false }).setView([60.170833, 24.9375], 10);
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(eventmap);
 
+String.prototype.hashCode = function() {
+  var hash = 0, i, chr, len;
+  if (this.length == 0) return hash;
+  for (i = 0, len = this.length; i < len; i++) {
+    chr   = this.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+};
+
 // looks up routes from user location to target location
 // and draws it on the map
 // TODO: take time into consideration
-function setTarget(location, time, name) {
+function setTarget(location, time, name, eventid) {
 	$('article.show').removeClass('show');
 	$('#mappage').addClass('show');
+	$('#notifyme').prop('checked', localStorage.getItem('event' + eventid));
+	$('#notifyme').data('event', eventid);
 	if(targetMarker)
 		eventmap.removeLayer(targetMarker);
 	targetMarker = L.marker(location);
@@ -32,6 +45,35 @@ function setTarget(location, time, name) {
 		var itinerary = data.plan.itineraries[0];
         render_route_layer(itinerary, routeLayer);
 		zoomToCoords(eventmap, new L.LatLng(location[0], location[1]), userLocation);
+		$('#notifyme').off($.eventStart);
+		$('#notifyme').on($.eventStart, function() {
+			window.console.log("ischecked " + $('#notifyme').prop('checked'));
+			if(!$('#notifyme').prop('checked')) {
+				for(var i = 0, count = 0; i < itinerary.legs.length; i++) {
+					var leg = itinerary.legs[i];
+					console.log(leg.mode);
+					if(leg.mode == "WALK" && i == 0) {
+						window.notify.notifyOn("Go to the busstation", "", leg.startTime, "file:///android_asset/www/img/walking.png", (eventid + '-' + count).hashCode());
+						count++;
+					}
+					else if(leg.mode == "BUS") {
+						window.notify.notifyOn("Enter Bus " + leg.route + " " + leg.headsign, "", leg.startTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode());
+						count++;
+						window.notify.notifyOn("Leave Bus " + leg.route + " " + leg.headsign, "", leg.endTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode());
+						count++;
+					} else if(leg.mode == "RAIL") {
+						window.notify.notifyOn("Enter Train " + leg.route + " " + leg.headsign, "", leg.startTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode());
+						count++;
+						window.notify.notifyOn("Leave Train " + leg.route + " " + leg.headsign, "", leg.endTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode());
+						count++;
+					}
+				}
+				localStorage.setItem('event' + eventid, itinerary.legs.length);
+			} else {
+				window.notify.remove(eventid, localStorage.getItem('event' + eventid));
+				window.localStorage.removeItem('event' + eventid);
+			}
+		});
 	});
 }
 
@@ -57,7 +99,7 @@ function onLocationFoundEvent(e) {
         .bindPopup("You are within " + radius + " meters from this point").openPopup();
     L.circle(e.latlng, radius).addTo(eventmap);
 	var img = localStorage.getItem("pic");
-	if(img.length)
+	if(img && img.length)
 		$('#mymarkericon').css('background-image', 'url(' + img + ')');
 }
 

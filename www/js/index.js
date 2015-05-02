@@ -107,12 +107,23 @@ if (window.cordova.platformId == "browser")
 			onPageLoad();
 	   }, 1000);
 	});
-else
+else {
 	$(function(){
 		showSlideOut();
 		onPageLoad();
 	});
+}
+
 document.addEventListener("deviceready", function() {
+	document.addEventListener("pause",  function(){
+		// save state:
+		localStorage.setItem("lastvisibleevent", $('#notifyme').data("event"));
+		
+	});
+	document.addEventListener("resume", function(){
+		// load state:
+		$('#notifyme').prop('checked', localStorage.getItem('lastvisibleevent'));
+	});
 	document.addEventListener("menubutton", function(){
 		if($('.slide-out').hasClass('open')) {
 			$('.slide-out').removeClass('open');
