@@ -112,4 +112,19 @@ else
 		showSlideOut();
 		onPageLoad();
 	});
+document.addEventListener("deviceready", function() {
+	document.addEventListener("menubutton", function(){
+		if($('.slide-out').hasClass('open')) {
+			$('.slide-out').removeClass('open');
+		} else {
+			$('.slide-out').addClass('open');
+		}
+	});
+	document.addEventListener("backbutton", function(){
+		if($('#mappage').hasClass('show')) {
+			$('#mappage').removeClass('show');
+			$('#events').addClass('show');
+		}
+	});
+});
 
