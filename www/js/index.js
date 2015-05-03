@@ -62,7 +62,8 @@ function showLoginDialog(callback) {
 
 function showSlideOut() {
 	$.UISlideout();
-	$.UISlideout.populate([{myhsl:'My HSL'},{navigate:'Navigate to location'},{events:"My Events"},{settings:'Settings'},{contacts:'My Contacts'}, {notifications:'My Notifications'}]);
+	$.UISlideout.populate([{myhsl:'My HSL'},{navigate:'Navigate to location'},{events:"My Events"},
+						   {notifications:'My Notifications'}, {contacts:'My Contacts'}]);
 }
 
 function onPageLoad() {

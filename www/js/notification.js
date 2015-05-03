@@ -154,7 +154,7 @@ function updateNotifications() {
 		notifications.sort(function(a,b){ return new Date(a.start_time) - new Date(b.start_time)});
 		$.template.repeater($('#notificationlist'), notificationTemplate, notifications);
 	  
-		$('#notificationlist').on('singletap', 'img', function() {
+		$('#notificationlist').on($.eventStart, 'img', function() {
 			$this = $(this);
 			var eventid = $this.data("id");
 			window.notify.remove(eventid, localStorage.getItem('event' + eventid));

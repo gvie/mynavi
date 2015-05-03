@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="css/chui-android-3.8.5.min.css" />
     <link rel="stylesheet" href="css/index.css" />
 	<link rel="stylesheet" href="css/leaflet.css" />
+	<link rel="stylesheet" href="css/jquery-ui.min.css" />
+	<link rel="stylesheet" href="css/jquery-ui.structure.min.css" />
+	<link rel="stylesheet" href="css/jquery-ui.theme.min.css" />
 
   </head>
   <body>
@@ -28,7 +31,7 @@
 			</aside>
 			</div>
 	
-			<ul class='list'>
+			<ul id='locationlist' class='list'>
 			<li class='comp'>
 				<aside style="display:inline;">
 					<img src="img/target.png" height="40px">
@@ -115,28 +118,25 @@
     <nav>
       <h1>Settings</h1>
     </nav>
-	
 	<article id='settings'>
 	Some Settings 
 	Link to Settings page or create Settings here directly
 		<div>
-
-			<!-- <form action="." method="get">
-               Enter your home address: <input type="text" name="adress"> <br>
-               <input type="submit" value="Submit">
-            </form>  -->
-
-            <form class="addressSearch" method="get" action="/">
-               <label><b>Enter your adress</b></label>
-               <input type="text" name="adress" id="user_input"><!-- navigate-to-input-->
-            
-
-               <input type="submit" onclick="showInput();"><br />
-             </form>
-               <label>Your adress: </label>
-               <p><span id='display'></span> </p>
-
-
+		</div>
+	</article>
+    <nav>
+      <h1>Edit Place</h1>
+    </nav>
+	<article id='editplace'>
+		<img id="placeimage" style="width: 40px;" ></img>
+		<input type="text" id="placelabel" placeholder="Description"/>
+		<div style="position:absolute; right:0px; top:0px">
+		<input type="button" value="OK" id="saveplace" />
+		<input type="button" value="Cancel" id="cancelplaceedit"/>
+		</div>
+		</div>
+		<div id="editplacemap" style="border: 0;height: 100%;">
+			<input id="placeinput" placeholder="Search Address..." style="z-index: 1; background-color: white; position: absolute; top: 10px; right: 10px; left: 10px; margin: auto; width: 50%;border-radius: 70px;padding: 10px;font-size: 40px;" type="text">
 		</div>
 	</article>
 	<nav>
@@ -178,6 +178,7 @@
 	</article>
     
 	<script src="js/jquery-2.1.3.js"></script>
+	<script src="js/jquery-ui.min.js"></script>
     <script src="js/chocolatechip-3.8.7.min.js"></script>
     <script src="js/chui-3.8.5.min.js"></script>
     <script src="js/leaflet.js"></script>
