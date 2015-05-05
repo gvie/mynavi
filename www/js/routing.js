@@ -4,6 +4,73 @@ var targetMarker = null;
 var eventmap = L.map('eventmap', { zoomControl:false }).setView([60.170833, 24.9375], 10);
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(eventmap);
 
+function setDestinationMarker(location, name) {
+	if(targetMarker)
+		eventmap.removeLayer(targetMarker);
+	targetMarker = L.marker(location, {draggable:'true'});
+	showRoute(location, new Date());
+	targetMarker.addTo(eventmap).bindPopup(name || "Destination").openPopup();
+	targetMarker.on('dragend', function(event) {
+		var marker = event.target;
+		var position = marker.getLatLng();
+		showRoute(position, new Date());
+		$.ajax( "http://dev.hel.fi/geocoder/v1/address/?lat=" + position.lat + "&lon=" + position.lng + "&limit=1&format=json")
+			.done(function(data) {
+				if($.isArray(data.objects) && data.objects.length) {
+					targetMarker.bindPopup(data.objects[0].name).openPopup();
+				}
+	});
+	});
+	$.ajax( "http://dev.hel.fi/geocoder/v1/address/?lat=" + location.lat + "&lon=" + location.lng + "&limit=1&format=json")
+			.done(function(data) {
+				if($.isArray(data.objects) && data.objects.length) {
+					targetMarker.bindPopup(data.objects[0].name).openPopup();
+				}
+	});
+}
+
+eventmap.on('click', function(e) {
+	if(targetMarker == null) {
+		setDestinationMarker(e.latlng);/*
+		targetMarker = L.marker(e.latlng, {draggable:'true'});
+		showRoute(e.latlng, new Date());
+		targetMarker.addTo(eventmap).bindPopup("Destination").openPopup();
+		targetMarker.on('dragend', function(event) {
+			var marker = event.target;
+			var position = marker.getLatLng();
+			showRoute(position, new Date());
+		});*/
+	}
+});
+
+$( "#destinationinput" ).autocomplete({
+	source: function (request, response) {
+		$.ajax( "http://dev.hel.fi/geocoder/v1/address/?name=" + request.term + "&limit=10&distinct_streets=true&format=json" )
+			.done(function(data) {
+				if($.isArray(data.objects)) {
+					response(data.objects.map(function(entry){
+						return { value: entry.name, data: entry.location.coordinates };
+					}));
+				}
+		});
+	},
+	minLength: 3,
+	select: function (event, ui) {
+		setDestinationMarker(new L.LatLng(ui.item.data[1], ui.item.data[0]), ui.item.value);
+		/*if(targetMarker)
+			eventmap.removeLayer(targetMarker);
+		showRoute(new L.LatLng(ui.item.data[1], ui.item.data[0]), new Date());
+		targetMarker = L.marker(new L.LatLng(ui.item.data[1], ui.item.data[0]), {draggable:'true'});
+		targetMarker.addTo(eventmap).bindPopup(ui.item.value).openPopup();
+		targetMarker.on('dragend', function(event){
+			var marker = event.target;
+			var position = marker.getLatLng();
+			showRoute(position, new Date());
+			
+		});*/
+	}
+});
+
 String.prototype.hashCode = function() {
   var hash = 0, i, chr, len;
   if (this.length == 0) return hash;
@@ -25,26 +92,76 @@ function setTarget(location, time, name, place, eventid) {
 	$('#notifyme').data('event', eventid);
 	if(targetMarker)
 		eventmap.removeLayer(targetMarker);
+	$('#routeitem').hide();
+	$('#routeheader').hide();
+	eventmap._onResize();
+	if(!location) {
+		return;
+	}
+	$("#destinationinput").val('');
 	targetMarker = L.marker(location);
 	targetMarker.addTo(eventmap).bindPopup(name).openPopup();
+	showRoute(new L.LatLng(location[0], location[1]), time, place, eventid)
+}
+var globaleventid = 0;
+
+function showRoute(location, time, place, eventid) {
+	if(!place)
+		place = "";
+	if(!eventid)
+		eventid = globaleventid++;
 	if(routeLayer != null)
 		eventmap.removeLayer(routeLayer);
     routeLayer = null;
-	eventmap._onResize();
-	zoomToCoords(eventmap, new L.LatLng(location[0], location[1]), userLocation);
+	zoomToCoords(eventmap, location, userLocation);
 	var params = {
-        toPlace: location[0] + "," + location[1],
-        fromPlace: userLocation.lat+"," + userLocation.lng,
+        toPlace: location.lat + "," + location.lng,
+        fromPlace: userLocation.lat + "," + userLocation.lng,
         minTransferTime: 180,
         walkSpeed: 1.17,
         maxWalkDistance: 100000,
 		numItineraries: 3};
 	$.getJSON("http://dev.hsl.fi/opentripplanner-api-webapp/ws/plan", params, function(data) {
 		console.log(data);
+		if(data.plan == null)
+			return;
 		routeLayer = L.featureGroup().addTo(eventmap);
 		var itinerary = data.plan.itineraries[0];
         render_route_layer(itinerary, routeLayer);
-		zoomToCoords(eventmap, new L.LatLng(location[0], location[1]), userLocation);
+		render_route_items(data.plan.itineraries[0]);
+		var routeindex = 0;
+		$('#routescrollprev').off($.eventStart);
+		$('#routescrollnext').off($.eventStart);
+		$('#routescrollprev').hide();
+		if(data.plan.itineraries.length > 1)
+			$('#routescrollnext').show();
+		else
+			$('#routescrollnext').hide();
+		$('#routescrollnext').on($.eventStart, function() {
+			routeindex++;
+			itinerary = data.plan.itineraries[routeindex];
+			render_route_items(data.plan.itineraries[routeindex]);
+			eventmap.removeLayer(routeLayer);
+			routeLayer = L.featureGroup().addTo(eventmap);
+			render_route_layer(data.plan.itineraries[routeindex], routeLayer);
+			if(routeindex >= data.plan.itineraries.length-1)
+				$('#routescrollnext').hide();
+			if(routeindex > 0)
+				$('#routescrollprev').show();
+		});
+		$('#routescrollprev').on($.eventStart, function() {
+			routeindex--;
+			itinerary = data.plan.itineraries[routeindex];
+			render_route_items(data.plan.itineraries[routeindex]);
+			eventmap.removeLayer(routeLayer);
+			routeLayer = L.featureGroup().addTo(eventmap);
+			render_route_layer(data.plan.itineraries[routeindex], routeLayer);
+			if(routeindex < data.plan.itineraries.length-1)
+				$('#routescrollnext').show();
+			if(routeindex == 0)
+				$('#routescrollprev').hide();
+		});
+		zoomToCoords(eventmap, location, userLocation);
 		$('#notifyme').off($.eventStart);
 		$('#notifyme').on($.eventStart, function() {
 			window.console.log("ischecked " + $('#notifyme').prop('checked'));
@@ -56,7 +173,7 @@ function setTarget(location, time, name, place, eventid) {
 					var leg = itinerary.legs[i];
 					console.log(leg.mode);
 					if(leg.mode == "WALK" && i == 0) {
-						window.notify.notifyOn("Go to the busstation", "", leg.startTime, "file:///android_asset/www/img/walking.png", (eventid + '-' + count).hashCode(), eventid, last);
+						window.notify.notifyOn("Go to the busstation", "", leg.startTime - 12000, "file:///android_asset/www/img/walking.png", (eventid + '-' + count).hashCode(), eventid, last);
 						count++;
 					}
 					else if(leg.mode == "BUS") {
@@ -65,9 +182,24 @@ function setTarget(location, time, name, place, eventid) {
 						window.notify.notifyOn("Leave Bus " + leg.route + " " + leg.headsign, "", leg.endTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode(), eventid, last);
 						count++;
 					} else if(leg.mode == "RAIL") {
-						window.notify.notifyOn("Enter Train " + leg.route + " " + leg.headsign, "", leg.startTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode(), eventid, last);
+						window.notify.notifyOn("Enter Train " + leg.route + " " + leg.headsign, "", leg.startTime - 6000, "file:///android_asset/www/img/train_icon.png", (eventid + '-' + count).hashCode(), eventid, last);
 						count++;
-						window.notify.notifyOn("Leave Train " + leg.route + " " + leg.headsign, "", leg.endTime - 6000, "file:///android_asset/www/img/bus_stop.png", (eventid + '-' + count).hashCode(), eventid, last);
+						window.notify.notifyOn("Leave Train " + leg.route + " " + leg.headsign, "", leg.endTime - 6000, "file:///android_asset/www/img/train_icon.png", (eventid + '-' + count).hashCode(), eventid, last);
+						count++;
+					} else if(leg.mode == "TRAM") {
+						window.notify.notifyOn("Enter Tram " + leg.route + " " + leg.headsign, "", leg.startTime - 6000, "file:///android_asset/www/img/tram_icon.png", (eventid + '-' + count).hashCode(), eventid, last);
+						count++;
+						window.notify.notifyOn("Leave Tram " + leg.route + " " + leg.headsign, "", leg.endTime - 6000, "file:///android_asset/www/img/tram_icon.png", (eventid + '-' + count).hashCode(), eventid, last);
+						count++;
+					} else if(leg.mode == "SUBWAY") {
+						window.notify.notifyOn("Enter Subway " + leg.route + " " + leg.headsign, "", leg.startTime - 6000, "file:///android_asset/www/img/subway_icon.png", (eventid + '-' + count).hashCode(), eventid, last);
+						count++;
+						window.notify.notifyOn("Leave Subway " + leg.route + " " + leg.headsign, "", leg.endTime - 6000, "file:///android_asset/www/img/subway_icon.png", (eventid + '-' + count).hashCode(), eventid, last);
+						count++;
+					} else if(leg.mode == "FERRY") {
+						window.notify.notifyOn("Enter Ferry " + leg.route + " " + leg.headsign, "", leg.startTime - 6000, "file:///android_asset/www/img/ferry_icon.png", (eventid + '-' + count).hashCode(), eventid, last);
+						count++;
+						window.notify.notifyOn("Leave Ferry " + leg.route + " " + leg.headsign, "", leg.endTime - 6000, "file:///android_asset/www/img/ferry_icon.png", (eventid + '-' + count).hashCode(), eventid, last);
 						count++;
 					}
 				}
@@ -114,6 +246,58 @@ eventmap.on('locationfound', onLocationFoundEvent);
 eventmap.on('locationerror', onLocationErrorEvent);
 // start locating user
 eventmap.locate({setView: false, maxZoom: 16});
+
+function formatDatetime(time) {
+	var params = {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"};
+	return new Date(time).toLocaleTimeString("en-us", params);
+}
+
+var routeitemTemplate = '<div style="float: left;text-align: center;">'+
+					'<div style="line-height: 25px;font-size: 80%;">[[=data.distance_or_bus]]</div>'+
+					'<img src="[[= data.typeimage]]">'+
+					'<div style="width: 100%;font-size: 80%;">[[=data.duration]]</div>'+
+					'</div>'+
+					'<img style="float: left;margin-top: 26px;" src="img/arrow-right_colored.png">';
+					// todo first item margin, last item remove
+function render_route_items(itinerary){
+	//{ typeimage: "img/walking_colored.png", duration: "4 min", distance_or_bus: "0.7 km"}
+	var startTime = itinerary.startTime;
+	var endTime = itinerary.endTime;
+	$('#routeheader').show();
+	$('#routetime').text(formatDatetime(startTime) + ' - ' + formatDatetime(endTime));
+	var routeitems = [];
+	for(var i = 0; i < itinerary.legs.length; i++) {
+		var leg = itinerary.legs[i];
+		var distance_or_bus;
+		var typeimage;
+		if(leg.mode === "WALK") {
+			distance_or_bus = Math.round(leg.distance/100)/10 + " km";
+			typeimage = "img/walking_colored.png";
+		} else {
+			distance_or_bus= leg.route;
+			if(leg.mode === "BUS")
+				typeimage = "img/bus_stop_colored.png";
+			else if(leg.mode === "FERRY")
+				typeimage = "img/ferry_colored.png";
+			else if(leg.mode === "TRAM")
+				typeimage = "img/tram_colored.png";
+			else if(leg.mode === "RAIL")
+				typeimage = "img/train_colored.png";
+			else if(leg.mode === "SUBWAY")
+				typeimage = "img/subway_colored.png";
+			else if(leg.mode === "WAIT")
+				typeimage = "img/waiting_colored.png";
+		}
+		var min = new Date(leg.duration).getMinutes();
+		routeitems.push({typeimage: typeimage, duration: min + ' min', distance_or_bus: distance_or_bus});
+	}
+	$('#routeitem').show();
+	$('#routeitem').empty();
+	$.template.repeater($('#routeitem'), routeitemTemplate, routeitems);
+	$('#routeitem div').first().css("margin-left","10px");
+	$('#routeitem img').last().remove();
+}
+
 
 // ----------------- Route Rendering ------------------
 

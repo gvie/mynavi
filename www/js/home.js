@@ -5,11 +5,11 @@ $(document).ready(function() {
 			var location = $this.data('location');
 			console.log(location);
 			if(location == "bringmeto") {
-				
+				setTarget(null, new Date(), name, name, 12);
 			} else if(location === "addnew") {
 				editLocation();
 			} else {
-				var name = $this.find('p').text();
+				var name = $this.find('div').text();
 				var img = $this.find('img').attr('src');
 				if(location && location.length === 2) {
 					setTarget(location, new Date(), name, name, 12);
@@ -69,9 +69,12 @@ $(document).ready(function() {
 			$('#myhsl').addClass('show');
 		});
 		$('#saveplace').on($.eventStart, function() {
+			if(editplacemarker == null)
+				return;
 			var position = editplacemarker.getLatLng();
 			var name = $('#placelabel').val();
 			var img = $('#placeimage').attr('src');
+			updateLocationList();
 			saveLocation(name, position, img);
 			updateLocationList();
 			$( "#placelabel" ).val('');
@@ -122,21 +125,22 @@ var bringMeTo = '<li class="comp" data-location="bringmeto">'+
 				'<aside style="display:inline;">'+
 					'<img src="img/target.png" height="40px">'+
 				'</aside>'+
-				'<p style="display:inline; white-space:nowrap; font-size:140%;" >Bring me to...</p>'+
+				'<div style="display:inline; white-space:nowrap; font-size:140%;line-height: 50px;" >Bring me to...</div>' +
 			'</li>';
 
 var locationTemplate = '<li class="comp" data-location="[[ if (data.position) { ]][[[= data.position.lat ]],[[= data.position.lng ]]][[ }]]">' +
-				'<aside style="display:inline;">' +
+				'<aside style="display:inline;margin-left: 30px;">' +
 					'<img src="[[= data.img ]]" height="40px">' +
 				'</aside>' +
-				'<p style="display:inline; white-space:nowrap; font-size:140%;" >[[= data.name ]]</p>' +
+				'<div style="display:inline; white-space:nowrap; font-size:140%;line-height: 50px;" >[[= data.name ]]</div>' +
+				'<aside><img class="locconfig" src="img/config.png" height="40px"></aside>'
 			'</li>';
 			
 var addNew = '<li class="comp" data-location="addnew">'+
 				'<aside style="display:inline;">'+
 					'<img src="img/new.jpg" height="40px">'+
 				'</aside>'+
-				'<p style="display:inline; white-space:nowrap; font-size:140%;" >Add new...</p>'+
+				'<div style="display:inline; white-space:nowrap; font-size:140%;line-height: 50px;" >Add new...</div>'+
 			'</li>';
 
 function updateLocationList() {

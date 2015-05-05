@@ -22,7 +22,15 @@ function gotEvents(data) {
 	window.console.log(data)
 	var events = data.data;
 	events.sort(function(a,b){ return new Date(a.start_time) - new Date(b.start_time)});
-	$.template.repeater($('#facebookevents'), eventTemplate, events);
+	events.splice(0, 0, { id: 124, start_time: new Date(), place: { location: {latitude:60.223798, longitude:24.851124}, name:"FAKE"}, cover: {source:""}});
+	if(events && events.length) {
+		$('#facebookevents').empty();
+		$.template.repeater($('#facebookevents'), eventTemplate, events);
+	}
+	else {
+		$('#locationlist').empty();
+		$('#locationlist').html('<li><div><h3>No Events</h3></div></li>');
+	}
   
 	$('#facebookevents').on('singletap', 'li', function() {
 		var whichSong = this.id;

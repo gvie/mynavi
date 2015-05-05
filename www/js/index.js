@@ -124,7 +124,7 @@ document.addEventListener("deviceready", function() {
 	document.addEventListener("pause",  function(){
 		// save state:
 		localStorage.setItem("lastvisibleevent", $('#notifyme').data("event"));
-		
+		localStorage.setItem("globaleventid", globaleventid);
 	});
 	document.addEventListener("resume", function(){
 		// load state:
@@ -133,6 +133,9 @@ document.addEventListener("deviceready", function() {
 		if(noti) {
 			notifications = JSON.parse(noti);
 		}
+		var eventid = localStorage.getItem("globaleventid");
+		if(eventid)
+			globaleventid = eventid;
 	});
 	document.addEventListener("menubutton", function(){
 		if($('.slide-out').hasClass('open')) {

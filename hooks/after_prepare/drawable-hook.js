@@ -21,6 +21,18 @@ var filestocopy = [{
     "www/img/walking.png": 
     "platforms/android/res/drawable/walking.png"
 }, {
+    "www/img/ferry_icon.png": 
+    "platforms/android/res/drawable/ferry_icon.png"
+}, {
+    "www/img/subway_icon.png": 
+    "platforms/android/res/drawable/subway_icon.png"
+}, {
+    "www/img/tram_icon.png": 
+    "platforms/android/res/drawable/tram_icon.png"
+},{
+    "www/img/train_icon.png": 
+    "platforms/android/res/drawable/train_icon.png"
+}, {
 	"platforms/android/com.phonegap.plugins.facebookconnect/msp-FacebookLib/libs/android-support-v4.jar":
 	"platforms/android/libs/android-support-v4.jar"
 } ];
