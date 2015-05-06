@@ -14,8 +14,14 @@ $(document).ready(function() {
 				if(location && location.length === 2) {
 					setTarget(location, new Date(), name, name, 12);
 				} else {
-					alert("No location set yet. Please select an address!");
-					editLocation(name, img);
+					$.UIPopup({ selector: "#main",
+								id: "welcome",
+								title: 'No location set yet',
+								message: 'Please select an address!',
+								continueButton: 'Ok',
+								callback: function() {
+									editLocation(name, img);
+								}});
 				}
 			}
 		});
@@ -42,10 +48,13 @@ $(document).ready(function() {
 							editplacemap.removeLayer(editplacemarker);
 						editplacemarker = L.marker(new L.LatLng(ui.item.data[1], ui.item.data[0]), {draggable:'true'});
 						editplacemarker.addTo(editplacemap).bindPopup(ui.item.value).openPopup();
+						
+						editplacemap.setView(new L.LatLng(ui.item.data[1], ui.item.data[0]), 16 );
 						editplacemarker.on('dragend', function(event){
 							$( "#placeinput" ).val('');
 							var marker = event.target;
 							var position = marker.getLatLng();
+							editplacemap.setView(position, 16 );
 							$.ajax( "http://dev.hel.fi/geocoder/v1/address/?lat=" + position.lat + "&lon=" + position.lng + "&limit=1&format=json")
 								.done(function(data) {
 									if($.isArray(data.objects) && data.objects.length) {
@@ -122,7 +131,7 @@ function saveLocation(name, position, img) {
 }
 
 var bringMeTo = '<li class="comp" data-location="bringmeto">'+
-				'<aside style="display:inline;">'+
+				'<aside style="display:inline;margin-left: 30px;">'+
 					'<img src="img/target.png" height="40px">'+
 				'</aside>'+
 				'<div style="display:inline; white-space:nowrap; font-size:140%;line-height: 50px;" >Bring me to...</div>' +
@@ -133,7 +142,7 @@ var locationTemplate = '<li class="comp" data-location="[[ if (data.position) { 
 					'<img src="[[= data.img ]]" height="40px">' +
 				'</aside>' +
 				'<div style="display:inline; white-space:nowrap; font-size:140%;line-height: 50px;" >[[= data.name ]]</div>' +
-				'<aside><img class="locconfig" src="img/config.png" height="40px"></aside>'
+				//'<aside><img class="locconfig" src="img/config.png" height="40px"></aside>'
 			'</li>';
 			
 var addNew = '<li class="comp" data-location="addnew">'+

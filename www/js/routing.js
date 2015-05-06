@@ -1,5 +1,10 @@
 var targetMarker = null;
 
+$.subscribe('chui/navigate/enter', function(article, choice){
+			if(choice === '#navigate') {
+			setTarget(null);
+}});
+
 // map initialization
 var eventmap = L.map('eventmap', { zoomControl:false }).setView([60.170833, 24.9375], 10);
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(eventmap);
@@ -30,16 +35,19 @@ function setDestinationMarker(location, name) {
 }
 
 eventmap.on('click', function(e) {
-	if(targetMarker == null) {
-		setDestinationMarker(e.latlng);/*
-		targetMarker = L.marker(e.latlng, {draggable:'true'});
-		showRoute(e.latlng, new Date());
-		targetMarker.addTo(eventmap).bindPopup("Destination").openPopup();
-		targetMarker.on('dragend', function(event) {
-			var marker = event.target;
-			var position = marker.getLatLng();
-			showRoute(position, new Date());
-		});*/
+	if(userLocation == null) {
+		userLocation = e.latlng;
+		var myIcon = L.divIcon({className: 'mymarker', iconSize: [50,50], iconAnchor:[25,50], popupAnchor: [0,-50], html: "<div id='mymarkericon' class='myicon'></div>"});
+		userLocationMarker = L.marker(e.latlng, {icon: myIcon}).addTo(eventmap)
+        .bindPopup("Start").openPopup();
+		L.circle(e.latlng, radius).addTo(eventmap);
+		var img = localStorage.getItem("pic");
+		if(img && img.length)
+			$('#mymarkericon').css('background-image', 'url(' + img + ')');
+		eventmap.setZoomAround(userLocation, 14);
+	}
+	else if(targetMarker == null) {
+		setDestinationMarker(e.latlng);
 	}
 });
 
@@ -57,19 +65,133 @@ $( "#destinationinput" ).autocomplete({
 	minLength: 3,
 	select: function (event, ui) {
 		setDestinationMarker(new L.LatLng(ui.item.data[1], ui.item.data[0]), ui.item.value);
-		/*if(targetMarker)
-			eventmap.removeLayer(targetMarker);
-		showRoute(new L.LatLng(ui.item.data[1], ui.item.data[0]), new Date());
-		targetMarker = L.marker(new L.LatLng(ui.item.data[1], ui.item.data[0]), {draggable:'true'});
-		targetMarker.addTo(eventmap).bindPopup(ui.item.value).openPopup();
-		targetMarker.on('dragend', function(event){
-			var marker = event.target;
-			var position = marker.getLatLng();
-			showRoute(position, new Date());
-			
-		});*/
 	}
 });
+
+function dateTimeNow() {
+	var datetime = new Date();
+	if (navigator.userAgent.indexOf("Android") > 0) {
+		var params = {hour: "2-digit", minute: "2-digit"};
+		$("#starttime").text(datetime.toLocaleTimeString("en-us", params));
+		$("#starttime").data('time', datetime.getTime());
+		
+		var params = {month: "short", day: "numeric"};
+		$("#startdate").text(datetime.toLocaleTimeString("en-us", params));
+		$("#startdate").data('date', datetime.getTime());
+	} else {
+		$('#jqstarttime').timepicker("setDate", datetime);
+		$("#jqstarttime").data('time', datetime.getTime());
+		$('#jqstartdate').timepicker("setDate", datetime);
+		$("#jqstartdate").data('date', datetime.getTime());
+	}
+}
+
+function getStartDateTime() {
+	if (navigator.userAgent.indexOf("Android") > 0) {
+		var time = new Date($("#starttime").data('time'));
+		var date = new Date($("#startdate").data('date'));
+		return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 
+					   time.getHours(), time.getMinutes(), time.getSeconds());
+	} 
+		var time = new Date($("#jqstarttime").data('time'));
+		var date = new Date($("#jqstartdate").data('date'));
+		return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 
+					   time.getHours(), time.getMinutes(), time.getSeconds());
+}
+
+$(function() {
+	dateTimeNow();
+	if (navigator.userAgent.indexOf("Android") > 0) {
+		$("#jqstarttime").hide();
+		$("#starttime").data('time', new Date().getTime());
+		var params = {hour: "2-digit", minute: "2-digit"};
+		$("#starttime").text(new Date().toLocaleTimeString("en-us", params));
+		$("#starttime").on($.eventStart, function() {
+			var options = {
+			  date: new Date($("#starttime").data('time')),
+			  mode: 'time'
+			};
+
+			datePicker.show(options, function(time) {
+				if(time) {
+					var params = {hour: "2-digit", minute: "2-digit"};
+					$("#starttime").text(new Date(time).toLocaleTimeString("en-us", params));
+					$("#starttime").data('time', time.getTime());
+					var date = new Date($("#startdate").data('date'));
+					var datetime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 
+					   time.getHours(), time.getMinutes(), time.getSeconds());
+					   
+					showRoute(targetMarker.getLatLng(), datetime);
+				}
+			});
+		});
+
+		$("#jqstartdate").hide();
+		$("#startdate").data('date', new Date().getTime());
+		params = {month: "short", day: "numeric"};
+		$("#startdate").text(new Date().toLocaleTimeString("en-us", params));
+		$("#startdate").on($.eventStart, function(){
+			var options = {
+			  date: new Date($("#startdate").data('date')),
+			  mode: 'date'
+			};
+
+			datePicker.show(options, function(date) {
+				if(date) {
+					var params = {month: "short", day: "numeric"};
+					$("#startdate").text(new Date(date).toLocaleTimeString("en-us", params));
+					$("#startdate").data('date', date.getTime());
+					
+					var time = new Date($("#starttime").data('date'));
+					var datetime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 
+					   time.getHours(), time.getMinutes(), time.getSeconds());
+					   
+					showRoute(targetMarker.getLatLng(), datetime);
+				}
+			});
+		});
+	} else {
+		$("#starttime").hide();
+		$("#startdate").hide();
+		$("#jqstarttime").timepicker({
+			dateFormat: 'yy-mm-dd',
+			defaultDate: new Date(),
+			defaultTime: new Date(),
+			onSelect: function(format, time){
+				var date = $("#jqstartdate").datepicker('getDate');
+				if(date && time) {
+					var datetime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 
+					   time.hour, time.minute, 0);
+					$("#jqstarttime").data('time', datetime.getTime());
+						   
+					showRoute(targetMarker.getLatLng(), datetime);
+				}
+			}
+		});
+		$('#jqstarttime').timepicker("setDate", new Date());
+		$("#jqstarttime").data('time', new Date().getTime());
+		$("#jqstartdate").datepicker({
+			dateFormat: 'yy-mm-dd',
+			inline: false,
+			defaultDate: new Date(),
+			onSelect: function(){
+				var date = $("#jqstartdate").datepicker('getDate');
+				$("#jqstartdate").data('date', date.getTime());
+				var time = new Date($("#jqstarttime").data('time'));
+				if(date && time) {
+					var datetime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 
+					   time.getHours(), time.getMinutes(), time.getSeconds());
+						   
+					showRoute(targetMarker.getLatLng(), datetime);
+				}
+			}
+		});
+		$('#jqstartdate').timepicker("setDate", new Date());
+		$("#jqstartdate").data('date', new Date().getTime());
+	}
+  });
+
+
 
 String.prototype.hashCode = function() {
   var hash = 0, i, chr, len;
@@ -94,16 +216,43 @@ function setTarget(location, time, name, place, eventid) {
 		eventmap.removeLayer(targetMarker);
 	$('#routeitem').hide();
 	$('#routeheader').hide();
-	eventmap._onResize();
 	if(!location) {
+		eventmap.setZoomAround(userLocation, 14);
+		eventmap.panTo(userLocation);	
+		userLocationMarker.closePopup();
+		userLocationMarker.openPopup();
+		eventmap.setView(userLocation, 16 );
+		eventmap._onResize();
 		return;
 	}
+	eventmap._onResize();
 	$("#destinationinput").val('');
 	targetMarker = L.marker(location);
 	targetMarker.addTo(eventmap).bindPopup(name).openPopup();
-	showRoute(new L.LatLng(location[0], location[1]), time, place, eventid)
+	showRoute(new L.LatLng(location[0], location[1]), time, place, eventid);
 }
 var globaleventid = 0;
+
+function formatAMPM(date) {
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  minutes = minutes < 10 ? '0'+minutes : minutes;
+  var strTime = hours + ':' + minutes + ' ' + ampm;
+  return strTime;
+}
+
+function formatDate(date) {
+  var mon = date.getMonth()+1;
+  if(mon <10)
+	  mon = '0' + mon;
+  var dat = date.getDate();
+  if(dat <10)
+	  dat = '0' + dat;
+  return date.getFullYear() + '-' + mon + '-' + dat;
+}
 
 function showRoute(location, time, place, eventid) {
 	if(!place)
@@ -114,13 +263,18 @@ function showRoute(location, time, place, eventid) {
 		eventmap.removeLayer(routeLayer);
     routeLayer = null;
 	zoomToCoords(eventmap, location, userLocation);
+	var dat = {year: "full", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"};
+	var tim = {hour: "2-digit", minute: "2-digit"};
 	var params = {
         toPlace: location.lat + "," + location.lng,
         fromPlace: userLocation.lat + "," + userLocation.lng,
         minTransferTime: 180,
         walkSpeed: 1.17,
         maxWalkDistance: 100000,
-		numItineraries: 3};
+		numItineraries: 3,
+		date: formatDate(time),
+		time: formatAMPM(time),
+		arriveBy: place !== ""};
 	$.getJSON("http://dev.hsl.fi/opentripplanner-api-webapp/ws/plan", params, function(data) {
 		console.log(data);
 		if(data.plan == null)
@@ -225,17 +379,19 @@ function zoomToCoords(mmap, source, target) {
 
 // save user location for later usage
 var userLocation = null;
+var userLocationMarker = null;
 
 function onLocationFoundEvent(e) {
     var radius = e.accuracy / 2;
 	userLocation = e.latlng;
 	var myIcon = L.divIcon({className: 'mymarker', iconSize: [50,50], iconAnchor:[25,50], popupAnchor: [0,-50], html: "<div id='mymarkericon' class='myicon'></div>"});
-    L.marker(e.latlng, {icon: myIcon}).addTo(eventmap)
+    userLocationMarker = L.marker(e.latlng, {icon: myIcon}).addTo(eventmap)
         .bindPopup("You are within " + radius + " meters from this point").openPopup();
     L.circle(e.latlng, radius).addTo(eventmap);
 	var img = localStorage.getItem("pic");
 	if(img && img.length)
 		$('#mymarkericon').css('background-image', 'url(' + img + ')');
+	eventmap.setZoomAround(userLocation, 14);
 }
 
 function onLocationErrorEvent(e) {
